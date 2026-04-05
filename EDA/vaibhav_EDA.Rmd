@@ -1,0 +1,11 @@
+---
+title: "vaibhav_EDA"
+author: "Vaibhav Jha"
+date: "2026-04-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
