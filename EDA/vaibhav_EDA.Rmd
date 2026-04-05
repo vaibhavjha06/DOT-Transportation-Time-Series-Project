@@ -10,3 +10,36 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Read in data
+```{r}
+df <- read.csv('/Users/vaibhavjha/Documents/Time Series/Project/Monthly_Modal_Time_Series.csv')
+head(df)
+```
+
+Filter for Pittsburgh Regional Transit, bus system ('Motor Bus')
+```{r}
+burgh.df <- df[df$Agency == 'Pittsburgh Regional Transit', ]
+table(burgh.df$Mode)
+
+burgh.bus.df <- burgh.df[burgh.df$Mode == 'MB', ]
+burgh.bus.df
+```
+
+Select columns of interest:
+```{r}
+final.df <- burgh.bus.df[, c('Year', 'Month', 'Unlinked.Passenger.Trips'), ]
+rownames(final.df) <- NULL
+final.df
+```
+
+Transform data into TS object
+```{r}
+ts.df <- ts(final.df$Unlinked.Passenger.Trips,
+            start = c(2014, 1),
+            frequency = 12)
+```
+
+Plots
+```{r}
+plot(ts.df)
+```
+
