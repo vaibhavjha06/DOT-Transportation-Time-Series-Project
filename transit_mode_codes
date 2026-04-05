@@ -1,0 +1,74 @@
+Here’s a clear breakdown of each mode code in your dataset, based on standard transit classifications (commonly from U.S. transit data like the National Transit Database):
+
+⸻
+
+🚍 Bus & Road-Based Modes
+	•	DR — Demand Response
+Flexible, on-demand service (paratransit, dial-a-ride). No fixed routes or schedules.
+	•	MB — Motor Bus
+Standard city buses running on fixed routes and schedules.
+	•	CB — Commuter Bus
+Longer-distance buses connecting suburbs to urban centers (often peak-hour focused).
+	•	RB — Bus Rapid Transit (BRT)
+Bus system with dedicated lanes, priority signals, and faster service.
+	•	TB — Trolleybus
+Electric buses powered by overhead wires.
+	•	PB — Publico / Público
+Shared-ride vans or jitneys operating on semi-fixed routes (common in places like Puerto Rico).
+
+⸻
+
+🚆 Rail Modes
+	•	LR — Light Rail
+Electric trains, usually street-level or partially separated (e.g., trams).
+	•	HR — Heavy Rail
+High-capacity metro/subway systems with full separation from traffic.
+	•	SR — Streetcar Rail
+Rail vehicles running mostly in mixed traffic on city streets.
+	•	CR — Commuter Rail (not listed but often confused with CB)
+Regional passenger trains connecting suburbs to cities.
+
+⸻
+
+🚐 Specialized / Flexible Transit
+	•	VP — Vanpool
+Shared vans for commuters, typically organized by employers or groups.
+	•	IP — Inclined Plane
+Cable-powered rail systems on steep slopes (funiculars).
+	•	MG — Monorail / Automated Guideway
+Rail systems running on a single beam or automated tracks.
+	•	YR — Hybrid Rail (e.g., “Hybrid Rail” or similar category)
+Rail systems combining characteristics of light and commuter rail (diesel/electric mix).
+
+⸻
+
+🚢 Water Transport
+	•	FB — Ferryboat
+Passenger boats operating on rivers, bays, or coastal routes.
+
+⸻
+
+🚠 Cable / Unique Systems
+	•	CC — Cable Car
+Rail cars pulled by continuously moving underground cables (e.g., San Francisco-style).
+	•	TR — Aerial Tramway
+Cable-suspended cars traveling through the air (like gondolas).
+
+⸻
+
+✈️ Other / Rare Modes
+	•	JT — Jitney
+Informal or semi-formal shared ride service (very rare in your dataset).
+
+⸻
+
+🧠 Key Takeaways
+	•	Most common:
+	•	DR (Demand Response)
+	•	MB (Motor Bus)
+	•	Rail systems: LR, HR, SR are smaller but structured transit
+	•	Niche modes: JT, CC, TR, IP appear rarely and are highly specialized
+
+⸻
+
+If you want, I can group these into broader categories (like “fixed route vs flexible” or “high-capacity vs low-capacity”) or help you analyze usage patterns.
