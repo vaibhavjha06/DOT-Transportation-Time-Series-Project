@@ -24,6 +24,13 @@ burgh.bus.df <- burgh.df[burgh.df$Mode == 'MB', ]
 burgh.bus.df
 ```
 
+Filter for 2021-2025
+```{r}
+burgh.bus.df <- burgh.bus.df[burgh.bus.df$Year >= 2021 & burgh.bus.df$Year <= 2025, ]
+burgh.bus.df
+nrow(burgh.bus.df)
+```
+
 Select columns of interest:
 ```{r}
 final.df <- burgh.bus.df[, c('Year', 'Month', 'Unlinked.Passenger.Trips'), ]
@@ -34,12 +41,32 @@ final.df
 Transform data into TS object
 ```{r}
 ts.df <- ts(final.df$Unlinked.Passenger.Trips,
-            start = c(2014, 1),
+            start = c(2021, 1),
+            end = c(2025, 12),
             frequency = 12)
 ```
 
 Plots
 ```{r}
-plot(ts.df)
+par(mgp = c(3, 1, 0))
+plot(ts.df,
+     lwd = 2,
+     xlab = "Year",
+     ylab = "Ridership",
+     main = "Pittsburgh Regional Transit from 2021-2026",
+     sub = "Measured in millions of riders (M)",
+     type = "l",
+     col = 'steelblue',
+     yaxt = "n")
+axis(2, 
+     at = axTicks(2), 
+     labels = paste0(axTicks(2)/1e6, "M"),
+     las = 2)
+```
+
+ACF/PACF
+```{r}
+acf(ts.df)
+pacf(ts.df)
 ```
 
