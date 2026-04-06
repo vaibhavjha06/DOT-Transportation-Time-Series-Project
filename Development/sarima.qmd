@@ -1,0 +1,94 @@
+---
+title: "sarima"
+format: pdf
+---
+
+Libraries
+```{r}
+library(here)
+library(astsa)
+library(tidyverse)
+library(forecast)
+```
+
+Loading data
+```{r}
+df <- arrow::read_parquet(here("Monthly_Modal_Time_Series.parquet"))
+head(df)
+```
+Filtering for Pittsburgh Regional Transit, bus system ('Motor Bus'), 2021-2025
+```{r}
+burgh.df <- df[df$Agency == 'Pittsburgh Regional Transit', ]
+burgh.bus.df <- burgh.df[burgh.df$Mode == 'MB', ]
+burgh.bus.df <- burgh.bus.df[burgh.bus.df$Year >= 2021 & burgh.bus.df$Year <= 2025, ]
+final.df <- burgh.bus.df[, c('Year', 'Month', 'Unlinked Passenger Trips'), ]
+rownames(final.df) <- NULL
+ts.df <- ts(final.df$'Unlinked Passenger Trips',
+            start = c(2021, 1),
+            end = c(2025, 12),
+            frequency = 12)
+head(ts.df)
+```
+## Model 1: ARIMA, faster search, no seasonal component
+```{r}
+model1 <- auto.arima(ts.df, 
+                  stepwise = TRUE, 
+                  approximation = TRUE,
+                  seasonal = FALSE,
+                  ic = "aic")
+summary(model1)
+```
+This algorithm suggests an ARIMA(0,1,3) model.
+```{r}
+resi_model1 <- ts.df - model1$fitted
+tsdisplay(resi_model1)
+```
+These residuals are clearly not white noise (which makes sense, since we can assume intuitively that there will be a seasonal component here)
+```{r}
+plot(model1$fitted,col = "red")
+lines(ts.df,col = "black")
+```
+These predictions don't look horrific, but they seem a bit "delayed".
+## Model 2: SARIMA, faster search
+```{r}
+model2 <- auto.arima(ts.df, 
+                  stepwise = TRUE, 
+                  approximation = TRUE,
+                  seasonal = TRUE,
+                  ic = "aic")
+summary(model2)
+```
+This algorithm suggests a $SARIMA(0,1,0)(1,1,0)_{12}$ model.
+```{r}
+resi_model2 <- ts.df - model2$fitted
+tsdisplay(resi_model2)
+```
+These residuals look more like white noise!
+```{r}
+plot(model2$fitted,col = "blue")
+lines(ts.df,col = "black")
+```
+These predictions look better than the previous model, with the predicted spikes coming at the right times instead of consistently after a spike is observed.
+
+## Model 3: SARIMA, exhaustive search
+```{r}
+model3 <- auto.arima(ts.df, 
+                  stepwise = FALSE, 
+                  approximation = FALSE,
+                  seasonal = TRUE,
+                  ic = "aic")
+summary(model3)
+```
+This algorithm suggests a $SARIMA(0,1,0)(0,1,1)_{12}$ model.
+```{r}
+resi_model3 <- ts.df - model3$fitted
+tsdisplay(resi_model3)
+```
+Residuals look pretty good again.
+```{r}
+plot(model2$fitted,col = "darkorange")
+lines(ts.df,col = "black")
+```
+This doesn't seem that different from Model 2 to me.
+
+
