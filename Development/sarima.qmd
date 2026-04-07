@@ -95,7 +95,11 @@ This doesn't seem that different from Model 2 to me.
 
 Use Model 3
 
-```{r}
+```{r, fig.width = 8, fig.height = 6}
 fc <- forecast(model3, h = 36)
-plot(fc)
+options(scipen=999) # No scientific notation
+plot(fc,
+     main = "36-Month Forecast of Pittsburgh Bus Ridership Based on Post-Covid Trends",
+     xlab = "Year",
+     ylab = "Ridership")
 ```
