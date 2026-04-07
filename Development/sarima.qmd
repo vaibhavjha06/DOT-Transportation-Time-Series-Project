@@ -91,4 +91,11 @@ lines(ts.df,col = "black")
 ```
 This doesn't seem that different from Model 2 to me.
 
+## Forecasting
 
+Use Model 3
+
+```{r}
+fc <- forecast(model3, h = 36)
+plot(fc)
+```
