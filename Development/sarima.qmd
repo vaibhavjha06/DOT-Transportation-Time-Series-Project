@@ -103,3 +103,136 @@ plot(fc,
      xlab = "Year",
      ylab = "Ridership")
 ```
+
+
+## Other city
+
+### Choose city
+
+```{R}
+
+
+
+df %>% group_by(`Primary UZA Name`) %>% summarise(area = first(`Primary UZA Sq Miles`), pop = first(`Service Area Population`)) %>% arrange(pop %>% desc()) %>% slice(11:20)
+
+df %>% filter(`Primary UZA Name` == "St. Louis, MO--IL") %>% pull(Agency) %>% table()
+```
+
+Seems like St. Louis is a good city to compare too as it is similar in population and area.
+
+```{R}
+
+lou.df <- df[df$Agency == 'Bi-State Development Agency of the Missouri-Illinois Metropolitan District', ]
+lou.bus.df <- lou.df[lou.df$Mode == 'MB', ]
+lou.bus.df <- lou.bus.df[lou.bus.df$Year >= 2021 & lou.bus.df$Year <= 2025, ]
+final.lou.df <- lou.bus.df[, c('Year', 'Month', 'Unlinked Passenger Trips'), ]
+rownames(final.lou.df) <- NULL
+ts.lou.df <- ts(final.lou.df$'Unlinked Passenger Trips', # Corrected to final.lou.df
+             start = c(2021, 1),
+             end = c(2025, 12),
+             frequency = 12)
+
+
+plot(ts.lou.df, 
+     main = "St. Louis Bus Ridership (2021-2025)", 
+     ylab = "Unlinked Passenger Trips", 
+     col = "darkblue")
+
+```
+
+
+### ACF and PACF for it
+
+```{R}
+acf2(ts.lou.df, max.lag = 48)
+
+```
+##Exhaustive search SARIMA model since there is clear seasonality
+
+
+```{R}
+model_lou <- auto.arima(ts.lou.df, 
+                        stepwise = FALSE, 
+                        approximation = FALSE,
+                        seasonal = TRUE,
+                        ic = "aic")
+summary(model_lou)
+```
+
+```{r}
+res_lou <- residuals(model_lou)
+
+checkresiduals(model_lou)
+```
+
+
+```{R}
+plot(ts.lou.df, col = "black", lwd = 2, main = "St. Louis: Actual vs Fitted")
+lines(fitted(model_lou), col = "red", lty = 2)
+legend("topleft", legend=c("Actual", "Fitted"), col=c("black", "red"), lty=1:2)
+
+```
+
+
+```{R}
+fc_lou <- forecast(model_lou, h = 36)
+plot(fc_lou, 
+     main = "36-Month Forecast of St. Louis Bus Ridership",
+     xlab = "Year", 
+     ylab = "Ridership")
+```
+
+```{R}
+
+# Generate forecasts for both cities
+fc_pitt <- forecast(model3, h = 36)
+fc_lou <- forecast(model_lou, h = 36)
+
+# 1. Base Plot: Plot Pittsburgh forecast (includes shaded error bars for Pitt)
+plot(fc_pitt, 
+     main = "Ridership Comparison: Pittsburgh vs. St. Louis",
+     xlab = "Year", 
+     ylab = "Unlinked Passenger Trips", 
+     col = "blue", 
+     fcol = "blue", 
+     shadecols = "lightblue", 
+     ylim = c(0, max(fc_pitt$upper, fc_lou$upper)))
+
+polygon(c(time(fc_lou$mean), rev(time(fc_lou$mean))), 
+        c(fc_lou$lower[,1], rev(fc_lou$upper[,1])), 
+        col = rgb(1, 0, 0, 0.2), border = NA)
+
+# 3. Add Historical "Fitted" Lines (Dashed)
+lines(fitted(model3), col = "darkblue", lty = 2)
+lines(fitted(model_lou), col = "darkred", lty = 2)
+
+# 4. Add St. Louis Actual Data and Forecast Mean (Solid Red)
+lines(ts.lou.df, col = "red", lwd = 2)
+lines(fc_lou$mean, col = "red", lwd = 2)
+
+# 5. Add Legend
+legend("topleft", 
+       legend = c("Pitt Actual/Forecast", "Pitt Fitted Model", 
+                  "StL Actual/Forecast", "StL Fitted Model",
+                  "Uncertainty (Pitt)", "Uncertainty (StL)"), 
+       col = c("blue", "darkblue", "red", "darkred", "lightblue", rgb(1,0,0,0.2)), 
+       lty = c(1, 2, 1, 2, 1, 1), 
+       lwd = c(2, 1, 2, 1, 10, 10), 
+       cex = 0.7)
+
+# 6. Quantitative Growth Comparison
+pitt_growth <- (as.numeric(tail(fc_pitt$mean, 1)) - as.numeric(tail(ts.df, 1))) / as.numeric(tail(ts.df, 1)) * 100
+lou_growth <- (as.numeric(tail(fc_lou$mean, 1)) - as.numeric(tail(ts.lou.df, 1))) / as.numeric(tail(ts.lou.df, 1)) * 100
+
+print(paste("Pittsburgh Projected 3-Year Growth:", round(pitt_growth, 2), "%"))
+print(paste("St. Louis Projected 3-Year Growth:", round(lou_growth, 2), "%"))
+```
+
+
+Did the same analysis for St. Louis (similar metro area and population) and took away that 
+1. way less people ride the bus there in general.
+2. We have a model that is autoregressive in St Louis so the previous month actually means something in predicting the next month unlike Pitt and the errors from the previous month also mean something in predicting the next month
+3. There is more raw seasonality in St louis so the same time last year will help predict the next year but in Pittsburgh we care more about the seasonality change year to year.
+Parameters are: st louis: ARIMA(1,1,1)(1,0,0)
+Pittsburgh: ARIMA(0,1,0)(0,1,1)
+
