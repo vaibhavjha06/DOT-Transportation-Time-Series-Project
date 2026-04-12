@@ -1,0 +1,126 @@
+---
+title: "Pre and Post COVID comparison"
+author: "Anirudh Karanam"
+date: "2026-04-12"
+output: pdf_document
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(here)
+library(astsa)
+library(tidyverse)
+library(forecast)
+
+df <- arrow::read_parquet("../Monthly_Modal_Time_Series.parquet")
+
+```
+
+
+
+```{r}
+pre.df <- df %>%
+  filter(Agency == "Pittsburgh Regional Transit",
+         Mode   == "MB",
+         Year   >= 2016,
+         Year   <= 2019) %>%
+  select(Year, Month, `Unlinked Passenger Trips`) %>%
+  arrange(Year, Month)
+
+rownames(pre.df) <- NULL
+
+ts.pre <- ts(pre.df$`Unlinked Passenger Trips`,
+             start     = c(2016, 1),
+             end       = c(2019, 12),
+             frequency = 12)
+
+post.df <- df %>%
+  filter(Agency == "Pittsburgh Regional Transit",
+         Mode   == "MB",
+         Year   >= 2021,
+         Year   <= 2025) %>%
+  select(Year, Month, `Unlinked Passenger Trips`) %>%
+  arrange(Year, Month)
+
+rownames(post.df) <- NULL
+
+ts.post <- ts(post.df$`Unlinked Passenger Trips`,
+              start     = c(2021, 1),
+              end       = c(2025, 12),
+              frequency = 12)
+
+model.pre <- auto.arima(ts.pre,
+                        stepwise    = FALSE,
+                        approximation = FALSE,
+                        seasonal    = TRUE,
+                        ic          = "aic")
+summary(model.pre)
+
+checkresiduals(model.pre)
+
+fc.pre <- forecast(model.pre, h = 108)
+
+model.post <- auto.arima(ts.post,
+                         stepwise      = FALSE,
+                         approximation = FALSE,
+                         seasonal      = TRUE,
+                         ic            = "aic")
+summary(model.post)
+
+fc.post <- forecast(model.post, h = 36)
+
+options(scipen = 999)
+
+ylim_range <- c(0, max(fc.pre$upper, fc.post$upper, na.rm = TRUE))
+
+# pre-COVID forecast
+plot(fc.pre,
+     main      = "Pittsburgh Bus Ridership: Pre COVID Trajectory vs. \nPost COVID Recovery",
+     xlab      = "Year",
+     ylab      = "Unlinked Passenger Trips",
+     col       = "darkgreen",
+     fcol      = "darkgreen",
+     shadecols = rgb(0, 0.6, 0, 0.15),
+     ylim      = ylim_range,
+     xlim      = c(2016, 2029),
+     yaxt      = "n")
+
+axis(2,
+     at     = axTicks(2),
+     labels = paste0(axTicks(2) / 1e6, "M"),
+     las    = 2)
+
+lines(ts.pre, col = "darkgreen", lwd = 2)
+
+lines(ts.post, col = "steelblue", lwd = 2)
+
+lines(fc.post$mean, col = "steelblue", lwd = 2, lty = 2)
+
+polygon(c(time(fc.post$mean), rev(time(fc.post$mean))),
+        c(fc.post$lower[, 1], rev(fc.post$upper[, 1])),
+        col = rgb(0.27, 0.51, 0.71, 0.2), border = NA)
+
+# COVID line
+abline(v = 2020, col = "red", lty = 3, lwd = 1.5)
+text(2020.1, ylim_range[2] * 0.95, "COVID-19", col = "red", cex = 0.8, adj = 0)
+
+legend("bottomleft",
+       legend = c("Pre-COVID actual",
+                  "Pre-COVID counterfactual forecast",
+                  "Post-COVID actual",
+                  "Post-COVID forecast"),
+       col    = c("darkgreen", "darkgreen", "steelblue", "steelblue"),
+       lty    = c(1, 1, 1, 2),
+       lwd    = c(2, 1, 2, 2),
+       cex    = 0.75)
+
+
+end_time   <- time(fc.post$mean)[length(fc.post$mean)]  # ~2028
+pre_cf_val <- as.numeric(window(fc.pre$mean, start = end_time, end = end_time))
+post_fc_val <- as.numeric(tail(fc.post$mean, 1))
+
+gap_pct <- (pre_cf_val - post_fc_val) / pre_cf_val * 100
+
+print(paste0("Ridership is expected to remain ", round(gap_pct, 1),
+             "% below pre-COVID counterfactual trajectory at the end of our forecast window"))
+```
+
