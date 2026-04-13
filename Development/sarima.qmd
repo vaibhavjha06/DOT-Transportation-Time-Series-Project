@@ -118,7 +118,7 @@ df %>% group_by(`Primary UZA Name`) %>% summarise(area = first(`Primary UZA Sq M
 df %>% filter(`Primary UZA Name` == "St. Louis, MO--IL") %>% pull(Agency) %>% table()
 ```
 
-Seems like St. Louis is a good city to compare too as it is similar in population and area.
+Seems like St. Louis is a good city to compare to as it is similar in population and area.
 
 ```{R}
 

@@ -24,6 +24,7 @@ pre.df <- df %>%
          Year   >= 2016,
          Year   <= 2019) %>%
   select(Year, Month, `Unlinked Passenger Trips`) %>%
+  mutate(Month = match(Month, month.name)) %>%
   arrange(Year, Month)
 
 rownames(pre.df) <- NULL
@@ -39,6 +40,7 @@ post.df <- df %>%
          Year   >= 2021,
          Year   <= 2025) %>%
   select(Year, Month, `Unlinked Passenger Trips`) %>%
+  mutate(Month = match(Month, month.name)) %>%
   arrange(Year, Month)
 
 rownames(post.df) <- NULL
