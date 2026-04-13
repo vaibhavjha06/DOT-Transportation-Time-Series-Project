@@ -18,14 +18,10 @@ df <- arrow::read_parquet("../Monthly_Modal_Time_Series.parquet")
 
 
 ```{r}
-pre.df <- df %>%
-  filter(Agency == "Pittsburgh Regional Transit",
-         Mode   == "MB",
-         Year   >= 2016,
-         Year   <= 2019) %>%
-  select(Year, Month, `Unlinked Passenger Trips`) %>%
-  mutate(Month = match(Month, month.name)) %>%
-  arrange(Year, Month)
+pre.df <- df[df$Agency == 'Pittsburgh Regional Transit', ]
+pre.df <- pre.df[pre.df$Mode == 'MB', ]
+pre.df <- pre.df[pre.df$Year >= 2016 & pre.df$Year <= 2019, ]
+pre.df <- pre.df[, c('Year', 'Month', 'Unlinked Passenger Trips'), ]
 
 rownames(pre.df) <- NULL
 
@@ -34,14 +30,10 @@ ts.pre <- ts(pre.df$`Unlinked Passenger Trips`,
              end       = c(2019, 12),
              frequency = 12)
 
-post.df <- df %>%
-  filter(Agency == "Pittsburgh Regional Transit",
-         Mode   == "MB",
-         Year   >= 2021,
-         Year   <= 2025) %>%
-  select(Year, Month, `Unlinked Passenger Trips`) %>%
-  mutate(Month = match(Month, month.name)) %>%
-  arrange(Year, Month)
+post.df <- df[df$Agency == 'Pittsburgh Regional Transit', ]
+post.df <- post.df[post.df$Mode == 'MB', ]
+post.df <- post.df[post.df$Year >= 2021 & post.df$Year <= 2025, ]
+post.df <- post.df[, c('Year', 'Month', 'Unlinked Passenger Trips'), ]
 
 rownames(post.df) <- NULL
 
