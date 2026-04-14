@@ -20,13 +20,13 @@ df <- arrow::read_parquet("../Monthly_Modal_Time_Series.parquet")
 ```{r}
 pre.df <- df[df$Agency == 'Pittsburgh Regional Transit', ]
 pre.df <- pre.df[pre.df$Mode == 'MB', ]
-pre.df <- pre.df[pre.df$Year >= 2016 & pre.df$Year <= 2019, ]
+pre.df <- pre.df[pre.df$Year >= 2014 & pre.df$Year <= 2019, ]
 pre.df <- pre.df[, c('Year', 'Month', 'Unlinked Passenger Trips'), ]
 
 rownames(pre.df) <- NULL
 
 ts.pre <- ts(pre.df$`Unlinked Passenger Trips`,
-             start     = c(2016, 1),
+             start     = c(2014, 1),
              end       = c(2019, 12),
              frequency = 12)
 
@@ -75,7 +75,7 @@ plot(fc.pre,
      fcol      = "darkgreen",
      shadecols = rgb(0, 0.6, 0, 0.15),
      ylim      = ylim_range,
-     xlim      = c(2016, 2029),
+     xlim      = c(2014, 2029),
      yaxt      = "n")
 
 axis(2,
